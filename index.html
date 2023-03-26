@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bangladesh</title>
+   <link rel="stylesheet"href="index.css">
+   <script>
+    function validateForm() {
+      var name = document.forms["landingForm"]["name"].value;
+      var email = document.forms["landingForm"]["email"].value;
+      var message = document.forms["landingForm"]["message"].value;
+  
+      if (name == "") {
+        alert("Name must be filled out");
+        return false;
+      }
+  
+      if (email == "") {
+        alert("Email must be filled out");
+        return false;
+      }
+  
+      if (message == "") {
+        alert("Message must be filled out");
+        return false;
+      }
+  
+      return true;
+    }
+    const form = document.querySelector("#transportation-booking form");
+
+form.addEventListener("submit", function(event) {
+  event.preventDefault();
+
+  const from = form.elements.from.value;
+  const to = form.elements.to.value;
+  const date = form.elements.date.value;
+  const time = form.elements.time.value;
+
+  if (from === "" || to === "" || date === "" || time === "") {
+    alert("Please fill out all fields.");
+  } else {
+    alert(`Booking transportation from ${from} to ${to} on ${date} at ${time}.`);
+  }
+});
+
+  </script>
+  
+   
+  
+      
+  </head>
+  <body>
+    <section class="hero">
+        <h1 class="hero-title">Welcome to Our Website</h1>
+        <p class="hero-description">Discover the best services in the industry.</p>
+        <a href="https://en.wikipedia.org/wiki/Bangladesh" target="-blank" class="btn hero-cta">Explore More</a>
+        <img src="https://www.pngitem.com/pimgs/m/71-718028_bangladesh-bengal-map-country-bangladesh-map-vector-hd.png"height="200px"width="200px" alt="Hero Image" class="hero-image">
+      </section>
+      
+    <header>
+      <nav>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <section id="about">
+        <h2>About Us</h2>
+        <p>This is the 1st full website about all the places in Bangladesh you have to visit.We have divided it by zilla,it must be easier for customers to find the places at their own zilla.</p>
+      </section>
+      <section id="services">
+        <h2>Our Services</h2>
+        <ul>
+          <li>Suggest the best places in Bangladesh</li>
+          <li>Booking hotel,resort etc.</li>
+          <li>Booking transportation</li>
+        </ul>
+        <section class="product-showcase">
+            <h2 class="section-title">Places</h2>
+            <div class="products">
+              <div class="product">
+                <figure>
+                <img src="https://www.teahub.io/photos/full/90-903439_bangladesh-cox-bazar-city.jpg" height="450px"width="700px"alt="Product 1"title="COX'S BAZAR SEA BEACH">
+                <figcaption>COX'S BAZAR SEA BEACH: The longest sea beach in the world</figcaption>
+                </figure>
+                <h3 class="product-title">A brief description of Cox's Bazar :</h3>
+                <p class="product-description">Cox’s Bazar is a town on the southeast coast of Bangladesh. It’s known for its very long, sandy beachfront, stretching from Sea Beach in the north to Kolatoli Beach in the south. Aggameda Khyang monastery is home to bronze statues and centuries-old Buddhist manuscripts. South of town, the tropical rainforest of Himchari National Park has waterfalls and many birds. North, sea turtles breed on nearby Sonadia Island.</p>
+                <p><strong> Visiting cost(Approx) 4000 to 10000 bdt</strong></p>
+              </div>
+              <div class="product">
+                <figure>
+                    <img src="https://porzoton.com/wp-content/uploads/2020/08/Ahsan-Manzil-Dhaka-01-porzoton.com_.jpg" height="450px"width="700px"alt="Product 1"title="Ahsan Monzil" alt="Product 2">
+                    <figcaption>Ahsan Manzil: The great architechtural monument of Bangladesh</figcaption>
+                </figure>
+               
+                <h3 class="product-title">A brief description of Ahsan Manzil</h3>
+                <p class="product-description">Ahsan Manzil is the erstwhile official residential palace and seat of the Nawab of Dhaka. The building is situated at Kumartoli along the banks of the Buriganga River in Dhaka, Bangladesh. Construction was started in 1859 and was completed in 1872. It was constructed in the Indo-Saracenic Revival architecture.</p>
+                <p ><strong> Visiting cost(Approx) 700 to 1000 bdt</strong> </p>
+              </div>
+            </div>
+          </section>
+          
+      </section>
+      <section id="contact">
+        <h2> <h2>Book Your Thriller schedule</h2></h2>
+        <form action="https://formspree.io/f/xwkjvqgk" method="post">
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email">
+         
+          <label for="message">Message:</label>
+          <textarea id="message" name="message"></textarea>
+          <div class="form-group">
+            <label for="from">From:</label>
+            <input type="text" id="from" name="from" required>
+          </div>
+          <div class="form-group">
+            <label for="to">To:</label>
+            <input type="text" id="to" name="to" required>
+          </div>
+          <div class="form-group">
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required>
+          </div>
+          <div class="form-group">
+            <label for="time">Time:</label>
+            <input type="time" id="time" name="time" required>
+          </div>
+          <button type="submit">Book Now</button><br><br>
+          <div>
+          <input type="reset"value="Clear form">
+          </div>
+        </form>
+      </section>
+      
+     
+      <section class="testimonials">
+        <h2 class="section-title">What Our Customers Say</h2>
+        <class class="testimonials-slider">
+          <div class="testimonial">
+            <p class="testimonial-text">"I am very happy with the service and quality of products offered by this company."</p>
+            <p class="testimonial-author">Shozol</p>
+          </div>
+          <div class="testimonial">
+            <p class="testimonial-text">"The customer support is excellent and always goes above and beyond to help me."</p>
+            <p class="testimonial-author">Shovon</p>
+          </div>
+      </section>
+     
+      
+    </main>
+    <footer>
+      <p>Copyright ©2022 Bangladesh</p>
+    </footer>
+  </body>
+</html>
