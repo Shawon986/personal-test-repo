@@ -1,0 +1,151 @@
+<!DOCTYPE html>                     <!This is considered the type of the file>
+
+
+#HTML (Hyper text markup langauge)
+#Made by Tim Berners lee in 1989
+
+<!-- This is a comment -->
+
+#Basic Structure of HTML
+
+<html lang="en">
+
+	<head>
+	<meta charset="UTF-8">  (meta tag)
+	
+	</head>
+		
+			<body>
+			
+			
+			</body>
+			
+</html>
+
+<!#Tag (1. container tag, 2. empty tag)
+#Container tag ( all types of tag which have opening and closing tag)
+#Empty tag ( which has only closing tag)>
+
+1. <> (opening tag)
+2. </> (closing tag)
+3. <html> 
+4. <head>
+5. <title> 
+6. <body> 
+7. <h1> (heading 1)(heading can be 1 to 6 such as <h1> to <h6>)
+8. <i> (italic)/<em>(emphasis) (Both will work for italic text)
+9. <u>(under line)/<ins>(insert) (Both will work for under line)
+10. <b> (bold) /<strong> (Both will work for bold text)
+11. <del>(delete)/<strike> (delete /strike something)
+12. <mark> (to highlight something)
+13. <hr/> (horizontal rule)
+14. <br/> (break)
+15. <pre> (to show as it is)
+16. <p> (paragraph)
+
+17. <ol> (order list)
+Structure:(order list)(Order list shows the serial number like 1,2,3,4,a,b,c,........)
+			<ol>
+				<li> something
+				<li> something
+				<li> something
+			</ol>
+#We can change the type of order list like: (<ol type="a"> <ol type="i">)
+#We also can start 2nd order list from the ending of the previous order list.
+Example:<ol start="4">
+			<li> something
+			<li> something
+			<li> something
+		</ol>
+		
+18. <ul> (unorder list)
+Structure: (Unorder list)
+			<ul>
+				<li>something
+				<li> something
+				<li> something
+			</ul>
+
+19. <li> (list)
+20. <sub> (subscript)
+21. <sup> (superscript)
+
+22. <img/> (image)
+#Adding image
+Structure: <img src="url"/> (src=Source)(url=Image location)
+Can use image hight and width(<img src="url"hight="50px"width="200px"/>
+
+#1 Also we can use some attributes into <img/> tag
+Example: (align="left/right/center" border="40px" hspace="60px" vspace="150px")
+
+#2 exeptional and important attribute for <img/> tag
+Example: title="Something"(it will show the text when we move the mouse pointer or touch the image)
+Example: alt="Not available" (it will provide the information about the image when it is not available)
+
+23. <a> (Anchor)(for use hyperlink to link other website)
+#Hyperlink
+Structure: <a href="url"> the name you have to mention for this link/url </a> (href=hypertext reference)
+### Must have to use (target="blank") attribute into the hyperlink because of opening as a new window for the linked website or video whatever.
+
+24. <iframe> (inline frame)
+#Showing any website and video
+Structure: <iframe src="url"> </iframe>
+#We can also add hight and width like <img/> tag
+
+25. <div> (Division)
+#Uses of <div> tag
+Example: <div style="background-color:#EAEDED">
+			<p style="color:black"><i> Container tag has something</i> 
+		 </div>
+  
+26.<small>
+27.<large>
+28.<blockquote>(show as a quote)
+29.<q> (quotation)(text into quotation mark)
+30.<address>
+
+31.<abbr>(abbraviation)
+Example:<p> He lives in <abbr title="Bangladesh"> BD</abbr> </p>
+
+32.<bdo>(Bi-Directional override)
+Example:<p><bdo dir="rtl"> I love you </bdo><p>
+33.<cite> (use for work title)
+
+34.<marquee>
+Example:<marquee> Shawon </marquee>
+
+35.Audio/Video tag
+Example:<video height="150px"width="250px"controls>
+    <source src="D:\Aman & Baizid\MVI_4268.MOV"type="video/mp4">
+</video>	
+
+
+
+
+#Attribute(name of attribute="property:value of property") <!Attribute is used for change the behaviour or display of an html element>
+#example: <h1 style="text-align:center"> </h1> 
+
+#Entity(to use any symbol and mark like copyright,trademark)
+#Structure: & name ;
+Example: &copy; &trade;
+#nbsp=next before space(to use a space)
+Example:&nbsp;
+#&lt;(<) &gt; (>)
+Example: &lt; body &gt; = <body>
+#Emoji and symbol using Entity
+Example: &#hexadecimal/decimal html imoji/symbol code;(&#128071;)
+
+
+#Font style(how to change font size and font)
+Example: <h1 style="font-size:28px;font-family:fantasy">
+
+
+
+
+
+			
+
+		
+
+
+
