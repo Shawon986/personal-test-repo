@@ -3,6 +3,7 @@ const express = require ("express");
 const bodyParser = require ("body-parser");
 const app = express();
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 app.use(bodyParser.json());
 
@@ -66,7 +67,10 @@ app.post("/students/login",async(req,res)=>{
             if(!validPassword){
                 res.status(404).json({message:"student unauthorized"});
             }else{
-                res.json(student);
+                const token = jwt.sign({email:student.email,id:student._id},"secret");
+                const studentObject = student.toJSON();
+                studentObject["accessToken"] = token;
+                res.json(studentObject)
             }
         }
     } catch (error) {
