@@ -57,26 +57,28 @@ app.post("/students",async(req,res)=>{
 //! LOGIN A STUDENT BY EMAIL AND PASSWORD
 app.post("/students/login",async(req,res)=>{
     try {
-        const {email,password}= req.body;
+        const {email,password} = req.body;
         const student = await Student.findOne({email:email});
         if(!student){
-            res.status(404).json({message:"student not found"});
+            res.status(404).json({message:"student not found"})
         }else{
             const validPassword = await bcrypt.compare(password,student.password);
-            console.log(validPassword)
+            console.log(validPassword);
             if(!validPassword){
-                res.status(404).json({message:"student unauthorized"});
+            res.status(401).json({message:"student unauthorized"})
             }else{
                 const token = jwt.sign({email:student.email,id:student._id},"secret");
                 const studentObject = student.toJSON();
-                studentObject["accessToken"] = token;
-                res.json(studentObject)
+                studentObject.accessToken = token;
+                res.json(studentObject);
             }
         }
     } catch (error) {
         console.error(error);
         res.status(500).json({message:"something went wrong"})
     }
+    
+
 })
 
 //! API TO GET ALL STUDENT USER
