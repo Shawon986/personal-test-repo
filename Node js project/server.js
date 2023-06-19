@@ -118,7 +118,7 @@ app.get("/students/profile",authenticateToken, async(req,res)=>{
     } catch (error) {
         console.error(error);
         res.status(500).json({message:"something went wrong"})
-    } 
+    }  
 
 })
 
