@@ -103,24 +103,7 @@ const authenticateToken = (req, res, next) =>{
 
 
 
-//! Get a student profile
 
-app.get("/students/profile",authenticateToken, async(req,res)=>{
-    try {
-        const id = req.student.id;
-        const student =await Student.findById(id)
-        if(student){
-            res.json(student)
-        }else{
-            res.status(404).json({message:"student not found"})
-        }
-        
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({message:"something went wrong"})
-    }  
-
-})
 
 //! API TO GET ALL STUDENT USER
 app.get("/students",async(req,res)=>{
