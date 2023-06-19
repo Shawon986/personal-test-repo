@@ -57,47 +57,68 @@ app.post("/students",async(req,res)=>{
 //! LOGIN A STUDENT BY EMAIL AND PASSWORD
 app.post("/students/login",async(req,res)=>{
     try {
-        const {email,password} = req.body;
-        const student = await Student.findOne({email:email});
+        const {email,password} =req.body;
+        const student=await Student.findOne({email:email});
         if(!student){
             res.status(404).json({message:"student not found"})
         }else{
-            const validPassword = await bcrypt.compare(password,student.password);
-            console.log(validPassword);
+            const validPassword=bcrypt.compare(password,student.password);
             if(!validPassword){
-            res.status(401).json({message:"student unauthorized"})
+               res.status(401).json({message:"student unauthorized"})
             }else{
                 const token = jwt.sign({email:student.email,id:student._id},process.env.JWT_SECRET);
                 const studentObject = student.toJSON();
-                studentObject.accessToken = token;
-                res.json(studentObject);
+                studentObject.accessToken =token;
+                res.json(studentObject)
             }
         }
     } catch (error) {
         console.error(error);
         res.status(500).json({message:"something went wrong"})
     }
+})
+
+
     
 //! Middleware to authenticate JWT accessToken
 
-const authenticateToken = (req,res,next)=>{
+const authenticateToken = (req, res, next) =>{
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(" ")[1];
     if(!token){
         res.status(401).json({message:"unauthorized"})
         return
     }else{
-        jwt.verify(token,process.env.JWT_SECRET,(err,student)=>{
+        jwt.verify(token,process.env.JWT_SECRET, (err,student) =>{
             if(err){
                 res.status(401).json({message:"unauthorized"})
             }else{
                 req.student=student;
-                next()
+                next();
             }
         });
        
-    }
+    } 
 }
+
+
+
+//! Get a student profile
+
+app.get("/students/profile",authenticateToken, async(req,res)=>{
+    try {
+        const id = req.student.id;
+        const student =await Student.findById(id)
+        if(student){
+            res.json(student)
+        }else{
+            res.status(404).json({message:"student not found"})
+        }
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({message:"something went wrong"})
+    } 
 
 })
 
