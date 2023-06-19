@@ -34,8 +34,8 @@ app.get("/",(req,res)=>{
 //! API TO CREATE A STUDENT USER
 app.post("/students",async(req,res)=>{
     try {
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(req.body.password,salt);
+        // const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(req.body.password,10);
         const password = hash;
         const studentObject = {
             name:req.body.name,
@@ -67,7 +67,7 @@ app.post("/students/login",async(req,res)=>{
             if(!validPassword){
             res.status(401).json({message:"student unauthorized"})
             }else{
-                const token = jwt.sign({email:student.email,id:student._id},"secret");
+                const token = jwt.sign({email:student.email,id:student._id},process.env.JWT_SECRET);
                 const studentObject = student.toJSON();
                 studentObject.accessToken = token;
                 res.json(studentObject);
@@ -78,6 +78,26 @@ app.post("/students/login",async(req,res)=>{
         res.status(500).json({message:"something went wrong"})
     }
     
+//! Middleware to authenticate JWT accessToken
+
+const authenticateToken = (req,res,next)=>{
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(" ")[1];
+    if(!token){
+        res.status(401).json({message:"unauthorized"})
+        return
+    }else{
+        jwt.verify(token,process.env.JWT_SECRET,(err,student)=>{
+            if(err){
+                res.status(401).json({message:"unauthorized"})
+            }else{
+                req.student=student;
+                next()
+            }
+        });
+       
+    }
+}
 
 })
 
