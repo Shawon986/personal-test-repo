@@ -62,7 +62,7 @@ app.post("/students/login",async(req,res)=>{
         if(!student){
             res.status(404).json({message:"student not found"})
         }else{
-            const validPassword=bcrypt.compare(password,student.password);
+            const validPassword=await bcrypt.compare(password,student.password);
             if(!validPassword){
                res.status(401).json({message:"student unauthorized"})
             }else{
