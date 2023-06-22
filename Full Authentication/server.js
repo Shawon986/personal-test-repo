@@ -6,6 +6,7 @@ const dotenv = require("dotenv").config();
 const app = express();
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 app.use(bodyParser.json());
 const uri = process.env.DB_URI;
 mongoose.connect(uri,{useNewUrlParser:true})
@@ -51,6 +52,33 @@ app.post("/packages",async(req,res)=>{
         console.error(error.message);
         res.status(500).json({message:"Something went wrong!!!"})
 
+    }
+
+});
+
+//! Login customer and generate accessToken
+
+app.post("/packages/login",async(req,res)=>{
+    try {
+    const{email,password}=req.body;
+    const package = await Package.findOne({email:email});
+    if(!package){
+        res.status(404).json({message:"Package not found"})
+    }else{
+        const isvalidPassword = await bcrypt.compare(password,package.password)
+        if(!isvalidPassword){
+            res.status (500).json({message:"Unauthorized !!!"})
+        }else{
+            const token = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET)
+            const packageObject = package.toJSON()
+            packageObject.accessToken=token;
+            res.json(packageObject);
+        }
+    }
+        
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({message:"Something went wrong!!!"})
     }
 
 })
