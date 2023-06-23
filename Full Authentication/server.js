@@ -71,8 +71,8 @@ app.post("/packages/login",async(req,res)=>{
         }else{
             const token = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET)
             const packageObject = package.toJSON()
-            packageObject.accessToken=token;
-            res.json(packageObject);
+            packageObject.accessToken=token; 
+            res.json(packageObject); 
         }
     }
         
@@ -81,9 +81,47 @@ app.post("/packages/login",async(req,res)=>{
         res.status(500).json({message:"Something went wrong!!!"})
     }
 
+});
+
+//! Middleware to auathenticate JWT token
+
+const authenticateToken = (req,res,next)=>{
+    const authHeader = req.headers.authorization;
+    const token = authHeader.split(" ")[1];
+    if(!token){
+        res.status(401).json({message:"Unauthorized!!!"})
+        return
+    }else{
+        jwt.verify(token,process.env.JWT_SECRET,(err,package)=>{
+            if(err){
+                res.status(401).json({message:"Unauthorized!!!"})
+            }else{
+                req.package=package
+                next()
+            }
+        })
+        
+    }
+}
+
+//! Get a package details
+
+app.get("/packages/profile",authenticateToken,async(req,res)=>{
+    try {
+        
+        const id = req.package.id;
+        const package = await Package.findById(id)
+        if(!package){
+            res.status(401).json({message:"Unauthorized!!!"})
+        }else{
+            res.json(package)
+        }
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({message:"Something went wrong!!!"})
+    }
 })
-
-
+ 
 
 const port = process.env.PORT;
 app.listen(port,()=>{ 
