@@ -20,6 +20,8 @@ const packageSchema = new mongoose.Schema({
     ticketPrice:String,
     email:String,
     password:String
+},{
+    timestamps:true
 });
  
 const Package = mongoose.model("Package",packageSchema) 
@@ -73,8 +75,8 @@ app.post("/packages/login",async(req,res)=>{
                     if(!isvalidPassword){
                         res.status (500).json({message:"Unauthorized !!!"})
                     }else{
-                        const accessToken = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET)
-                        const refreshToken = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET)
+                        const accessToken = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET,{expiresIn:"1m"})
+                        const refreshToken = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET,{expiresIn:"3m"})
                         const packageObject = package.toJSON()
                         packageObject.accessToken=accessToken; 
                         packageObject.refreshToken=refreshToken;  
