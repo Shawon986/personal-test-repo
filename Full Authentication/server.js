@@ -21,20 +21,20 @@ const packageSchema = new mongoose.Schema({
     email:String,
     password:String
 });
-
-const Package = mongoose.model("Package",packageSchema)
+ 
+const Package = mongoose.model("Package",packageSchema) 
 
 //! Check connection
 
 app.get("/",(req,res)=>{
-    res.json({message:"Welcome !!!"})
-});
+    res.json({message:"Welcome !!!"}) 
+});  
 
-//! Create Customer tour package
-
-app.post("/packages",async(req,res)=>{
+//! Create Customer tour package 
+ 
+app.post("/packages",async(req,res)=>{  
     try {
-        const hash = await bcrypt.hash(req.body.password,10);
+        const hash = await bcrypt.hash(req.body.password,10); 
         const password = hash;
         const packageObject ={
             name:req.body.name,
@@ -69,9 +69,11 @@ app.post("/packages/login",async(req,res)=>{
         if(!isvalidPassword){
             res.status (500).json({message:"Unauthorized !!!"})
         }else{
-            const token = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET)
+            const accessToken = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET)
+            const refreshToken = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET)
             const packageObject = package.toJSON()
-            packageObject.accessToken=token; 
+            packageObject.accessToken=accessToken; 
+            packageObject.refreshToken=refreshToken; 
             res.json(packageObject); 
         }
     }
@@ -87,12 +89,12 @@ app.post("/packages/login",async(req,res)=>{
 
 const authenticateToken = (req,res,next)=>{
     const authHeader = req.headers.authorization;
-    const token = authHeader.split(" ")[1];
-    if(!token){
+    const accessToken = authHeader.split(" ")[1];
+    if(!accessToken){
         res.status(401).json({message:"Unauthorized!!!"})
         return
     }else{
-        jwt.verify(token,process.env.JWT_SECRET,(err,package)=>{
+        jwt.verify(accessToken,process.env.JWT_SECRET,(err,package)=>{
             if(err){
                 res.status(401).json({message:"Unauthorized!!!"})
             }else{
