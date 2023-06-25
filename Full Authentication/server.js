@@ -67,46 +67,10 @@ app.post("/packages/login",async(req,res)=>{
         res.status(500).json({message:"Type is not defined"})
     }else{
         if(type=="email"){
-            const package = await Package.findOne({email:email});
-                if(!package){
-                    res.status(404).json({message:"Package not found"})
-                }else{
-                    const isvalidPassword = await bcrypt.compare(password,package.password)
-                    if(!isvalidPassword){
-                        res.status (500).json({message:"Unauthorized !!!"})
-                    }else{
-                        const accessToken = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET,{expiresIn:"1m"})
-                        const refreshToken = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET,{expiresIn:"3m"})
-                        const packageObject = package.toJSON()
-                        packageObject.accessToken=accessToken; 
-                        packageObject.refreshToken=refreshToken;  
-                        res.json(packageObject); 
-                    }
-                }
+            await emailLogin(email, res, password); 
         }else{
-            if(!refreshToken){
-                res.status(500).json({message:"RefreshToken is not defined"})
-            }else{
-                jwt.verify(refreshToken,process.env.JWT_SECRET,async(err,payload)=>{
-                    if(err){
-                        res.status(401).json({message:"Unauthorized!!!"})
-                    }else{
-                        const id = payload.id
-                        const package = await Package.findById(id);
-                        if(!package){
-                            res.status(401).json({message:"Unauthorized!!!"})
-                        }else{
-                            const accessToken = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET)
-                            const refreshToken = jwt.sign({email:package.email,id:package._id},process.env.JWT_SECRET)
-                            const packageObject = package.toJSON()
-                            packageObject.accessToken=accessToken; 
-                            packageObject.refreshToken=refreshToken; 
-                            res.json(packageObject); 
-                        }
-                    }
-                })
-            }
-        }
+            refreshTokenLogin(refreshToken, res);
+        } 
     }
 
 
@@ -163,3 +127,46 @@ const port = process.env.PORT;
 app.listen(port,()=>{ 
     console.log(`App is running on port ${port}`)
 })
+async function emailLogin(email, res, password) {
+    const package = await Package.findOne({ email: email });
+    if (!package) {
+        res.status(404).json({ message: "Package not found" });
+    } else {
+        const isvalidPassword = await bcrypt.compare(password, package.password);
+        if (!isvalidPassword) {
+            res.status(500).json({ message: "Unauthorized !!!" });
+        } else {
+            tokenGenerator(package, res);
+        }
+    }
+}
+
+function refreshTokenLogin(refreshToken, res) {
+    if (!refreshToken) {
+        res.status(500).json({ message: "RefreshToken is not defined" });
+    } else {
+        jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, payload) => {
+            if (err) {
+                res.status(401).json({ message: "Unauthorized!!!" });
+            } else {
+                const id = payload.id;
+                const package = await Package.findById(id);
+                if (!package) {
+                    res.status(401).json({ message: "Unauthorized!!!" });
+                } else {
+                    tokenGenerator(package, res);
+                }
+            }
+        });
+    }
+}
+
+function tokenGenerator(package, res) {
+    const accessToken = jwt.sign({ email: package.email, id: package._id }, process.env.JWT_SECRET, { expiresIn: "1m" });
+    const refreshToken = jwt.sign({ email: package.email, id: package._id }, process.env.JWT_SECRET, { expiresIn: "3m" });
+    const packageObject = package.toJSON();
+    packageObject.accessToken = accessToken;
+    packageObject.refreshToken = refreshToken;
+    res.json(packageObject);
+}
+
