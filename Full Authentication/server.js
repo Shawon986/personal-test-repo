@@ -165,7 +165,7 @@ function tokenGenerator(package, res) {
     const accessToken = jwt.sign({ email: package.email, id: package._id }, process.env.JWT_SECRET, { expiresIn: "1m" });
     const refreshToken = jwt.sign({ email: package.email, id: package._id }, process.env.JWT_SECRET, { expiresIn: "3m" });
     const packageObject = package.toJSON();
-    packageObject.accessToken = accessToken;
+    packageObject.accessToken = accessToken; 
     packageObject.refreshToken = refreshToken;
     res.json(packageObject);
 }
