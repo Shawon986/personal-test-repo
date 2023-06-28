@@ -53,8 +53,12 @@ app.post("/users",async(req,res)=>{
 
 app.post("/users/login",async(req,res)=>{
     try {
-        const{email,password}=req.body;
-        const user = await User.findOne({email:email});
+        const{email,password,type,refreshToken}=req.body;
+        if(!type){
+            res.status(401).json({message:"Type is undefined"})
+        }else{
+            if(type=="email"){
+                const user = await User.findOne({email:email});
         if(!user){
             res.status(404).json({message:"User not found"})
         }else{
@@ -63,11 +67,45 @@ app.post("/users/login",async(req,res)=>{
                 res.status(500).json({message:"User unauthorized !!!"})
             }else{
                 const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
+                const refreshToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
                 const userObject=user.toJSON()
                 userObject.accessToken=accessToken
+                userObject.refreshToken=refreshToken
                 res.json(userObject)
             }
         }
+            }else{
+                if(!refreshToken){
+                    res.status(500).json({message:"RefreshToken is undefined !!!"})
+                }else{
+                    const token = jwt.verify(refreshToken,process.env.JWT_SECRET,async(err,payload)=>{
+                        if(err){
+                            res.status(401).json({ message: "Customer Unauthorized!!!" });
+                        }else{
+                            const id = payload.id
+                            const user = await User.findById(id)
+                            if(!user){
+                                res.status(404).json({message:"User not found"})
+                            }else{
+                                const isValidPassword =await bcrypt.compare(password,user.password)
+                                if(!isValidPassword){
+                                    res.status(500).json({message:"User unauthorized !!!"})
+                                }else{
+                                    const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
+                                    const refreshToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
+                                    const userObject=user.toJSON()
+                                    userObject.accessToken=accessToken
+                                    userObject.refreshToken=refreshToken
+                                    res.json(userObject)
+                                }
+                            }
+
+                        }
+                    })
+                }
+            }
+        }
+        
     } catch (error) {
         res.status(500).json({message:"Something went wrong !!!"})
         console.error(error.message)
