@@ -6,6 +6,7 @@ const app =express();
 const dotenv = require("dotenv").config();
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 app.use(bodyParser.json());
 
 const uri = process.env.DB_URI
@@ -46,6 +47,31 @@ app.post("/users",async(req,res)=>{
         console.error(error.message)
     }
    
+})
+
+//! Login a user
+
+app.post("/users/login",async(req,res)=>{
+    try {
+        const{email,password}=req.body;
+        const user = await User.findOne({email:email});
+        if(!user){
+            res.status(404).json({message:"User not found"})
+        }else{
+            const isValidPassword =await bcrypt.compare(password,user.password)
+            if(!isValidPassword){
+                res.status(500).json({message:"User unauthorized !!!"})
+            }else{
+                const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
+                const userObject=user.toJSON()
+                userObject.accessToken=accessToken
+                res.json(userObject)
+            }
+        }
+    } catch (error) {
+        res.status(500).json({message:"Something went wrong !!!"})
+        console.error(error.message)
+    }
 })
 
 //! Get all user
