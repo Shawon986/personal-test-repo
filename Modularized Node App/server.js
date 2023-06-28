@@ -4,24 +4,15 @@ const express = require ("express");
 const bodyParser = require("body-parser");
 const app =express();
 const dotenv = require("dotenv").config();
-const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const dbConnection = require("./config/DB");
+const User = require("./models/Users")
 app.use(bodyParser.json());
 
-const uri = process.env.DB_URI
+dbConnection()
 
-mongoose.connect(uri,{useNewUrlParser:true})
-.then(()=>console.log("DB is connected"))
-.catch((_error)=>console.log("DB is not connected"))
 
-const userSchema = new mongoose.Schema({
-    name:String,
-    age:Number,
-    email:String,
-    password:String,
-})
-const User = mongoose.model("User",userSchema)
 
 //! Check connection
 app.get("/",(req,res)=>{
@@ -66,11 +57,11 @@ app.post("/users/login",async(req,res)=>{
             if(!isValidPassword){
                 res.status(500).json({message:"User unauthorized !!!"})
             }else{
-                const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
-                const refreshToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
+                const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET,{expiresIn:"2d"})
+                const refreshToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET,{expiresIn:"60d"})
                 const userObject=user.toJSON()
-                userObject.accessToken=accessToken
-                userObject.refreshToken=refreshToken
+                userObject.accessToken=accessToken  
+                userObject.refreshToken=refreshToken 
                 res.json(userObject)
             }
         }
@@ -91,8 +82,8 @@ app.post("/users/login",async(req,res)=>{
                                 if(!isValidPassword){
                                     res.status(500).json({message:"User unauthorized !!!"})
                                 }else{
-                                    const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
-                                    const refreshToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
+                                    const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET,{expiresIn:"2d"})
+                                    const refreshToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET,{expiresIn:"60d"})
                                     const userObject=user.toJSON()
                                     userObject.accessToken=accessToken
                                     userObject.refreshToken=refreshToken
@@ -110,6 +101,43 @@ app.post("/users/login",async(req,res)=>{
         res.status(500).json({message:"Something went wrong !!!"})
         console.error(error.message)
     }
+})
+
+//! Middleware
+const authAccessToken = (req,res,next)=>{
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(" ")[1]
+    if(!token){
+        res.status(401).json({message:"User unauthorized"})
+        return
+    }else{
+        jwt.verify(token,process.env.JWT_SECRET,(err,payload)=>{
+            if(err){
+                res.status(401).json({ message: "Customer Unauthorized!!!" });
+            }else{
+                req.payload=payload
+                next()
+            }
+        }) 
+    }
+
+}
+
+//! Get user profile by Token
+app.get("/users/profile",authAccessToken,async(req,res)=>{
+    try {
+        const id = req.payload.id;
+        const user = await User.findById(id);
+        if(!user){
+            res.status(404).json({message:"User not found"})
+        }else{
+            res.json(user)
+        }
+    } catch (error) {
+        res.status(500).json({message:"Something went wrong !!!"})
+        console.error(error.message)
+    }
+   
 })
 
 //! Get all user
@@ -153,7 +181,7 @@ app.put("/users/:id",async(req,res)=>{
         res.status(500).json({message:"Something went wrong !!!"})
         console.error(error.message)
     }
-})
+})  
 
 //! Delete a user by id
 app.delete("/users/:id",async(req,res)=>{
