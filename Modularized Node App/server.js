@@ -1,15 +1,10 @@
 
-
 const express = require ("express");
 const bodyParser = require("body-parser");
 const app =express();
 const dotenv = require("dotenv").config();
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const dbConnection = require("./config/DB");
-const User = require("./models/Users")
 app.use(bodyParser.json());
-
 dbConnection()
 
 
@@ -20,183 +15,22 @@ app.get("/",(req,res)=>{
 })
 
 //! Create user
-app.post("/users",async(req,res)=>{
-    try {
-        const hashPassword =await bcrypt.hash(req.body.password,10)
-        const password=hashPassword;
-        const userObject ={
-            name:req.body.name,
-            age:req.body.age,
-            email:req.body.email,
-            password:hashPassword,
-        }
-        const user = new User(userObject)
-        res.json(user)
-        await user.save();
-    } catch (error) {
-        res.status(500).json({message:"Something went wrong !!!"})
-        console.error(error.message)
-    }
-   
-})
+app.use("/api/users",require("./routes/api/user"))
 
 //! Login a user
-
-app.post("/users/login",async(req,res)=>{
-    try {
-        const{email,password,type,refreshToken}=req.body;
-        if(!type){
-            res.status(401).json({message:"Type is undefined"})
-        }else{
-            if(type=="email"){
-                const user = await User.findOne({email:email});
-        if(!user){
-            res.status(404).json({message:"User not found"})
-        }else{
-            const isValidPassword =await bcrypt.compare(password,user.password)
-            if(!isValidPassword){
-                res.status(500).json({message:"User unauthorized !!!"})
-            }else{
-                const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET,{expiresIn:"2d"})
-                const refreshToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET,{expiresIn:"60d"})
-                const userObject=user.toJSON()
-                userObject.accessToken=accessToken  
-                userObject.refreshToken=refreshToken 
-                res.json(userObject)
-            }
-        }
-            }else{
-                if(!refreshToken){
-                    res.status(500).json({message:"RefreshToken is undefined !!!"})
-                }else{
-                    const token = jwt.verify(refreshToken,process.env.JWT_SECRET,async(err,payload)=>{
-                        if(err){
-                            res.status(401).json({ message: "Customer Unauthorized!!!" });
-                        }else{
-                            const id = payload.id
-                            const user = await User.findById(id)
-                            if(!user){
-                                res.status(404).json({message:"User not found"})
-                            }else{
-                                const isValidPassword =await bcrypt.compare(password,user.password)
-                                if(!isValidPassword){
-                                    res.status(500).json({message:"User unauthorized !!!"})
-                                }else{
-                                    const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET,{expiresIn:"2d"})
-                                    const refreshToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET,{expiresIn:"60d"})
-                                    const userObject=user.toJSON()
-                                    userObject.accessToken=accessToken
-                                    userObject.refreshToken=refreshToken
-                                    res.json(userObject)
-                                }
-                            }
-
-                        }
-                    })
-                }
-            }
-        }
-        
-    } catch (error) {
-        res.status(500).json({message:"Something went wrong !!!"})
-        console.error(error.message)
-    }
-})
-
-//! Middleware
-const authAccessToken = (req,res,next)=>{
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(" ")[1]
-    if(!token){
-        res.status(401).json({message:"User unauthorized"})
-        return
-    }else{
-        jwt.verify(token,process.env.JWT_SECRET,(err,payload)=>{
-            if(err){
-                res.status(401).json({ message: "Customer Unauthorized!!!" });
-            }else{
-                req.payload=payload
-                next()
-            }
-        }) 
-    }
-
-}
+app.use("/api/users/login",require("./routes/api/user"))
 
 //! Get user profile by Token
-app.get("/users/profile",authAccessToken,async(req,res)=>{
-    try {
-        const id = req.payload.id;
-        const user = await User.findById(id);
-        if(!user){
-            res.status(404).json({message:"User not found"})
-        }else{
-            res.json(user)
-        }
-    } catch (error) {
-        res.status(500).json({message:"Something went wrong !!!"})
-        console.error(error.message)
-    }
-   
-})
+app.use("/api/users/profile",require("./routes/api/user"))
 
 //! Get all user
-app.get("/users",async(req,res)=>{
-    try {
-        const user= await User.find({})
-        res.json(user)
-    } catch (error) {
-        res.status(500).json({message:"Something went wrong !!!"})
-        console.error(error.message)
-    }
-})
+app.use("/api/users",require("./routes/api/user"))
 
-//! Get a user by id
-app.get("/users/:id",async(req,res)=>{
-    try {
-        const id = req.params.id
-        const user = await User.findById(id)
-        if(!user){
-            res.status(404).json({message:"User not found"})
-        }else{
-            res.json(user)
-        }
-    } catch (error) {
-        res.status(500).json({message:"Something went wrong !!!"})
-        console.error(error.message)
-    }
-})
 
-//! Update a user by id
-app.put("/users/:id",async(req,res)=>{
-    try {
-        const id = req.params.id;
-        const user = await User.findByIdAndUpdate(id,req.body,{new:true})
-        const hashPassword =await bcrypt.hash(req.body.password,10)
-        const password=hashPassword;
-        user.password=password;
-        res.json(user);
-        await user.save()
-    } catch (error) {
-        res.status(500).json({message:"Something went wrong !!!"})
-        console.error(error.message)
-    }
-})  
 
-//! Delete a user by id
-app.delete("/users/:id",async(req,res)=>{
-    try {
-        const id = req.params.id;
-        const user = await User.findByIdAndDelete(id);
-        res.json(user)
-    } catch (error) {
-        res.status(500).json({message:"Something went wrong !!!"})
-        console.error(error.message)
-    }
-})
-
- 
 const port = process.env.PORT
 app.listen(port,()=>{
     console.log(`App is running on port ${port}`)
 })
+
+
