@@ -82,11 +82,11 @@ router.get("/:id",async(req,res)=>{
     } catch (error) {
         res.status(500).json({message:"Something went wrong !!!"})
         console.error(error.message)
-    }
+    } 
 })
 
 //! Update a user by id
-router.put("/:id",async(req,res)=>{
+router.put("/:id",authAccessToken,async(req,res)=>{
     try {
         const id = req.params.id;
         const user = await User.findByIdAndUpdate(id,req.body,{new:true})
@@ -102,7 +102,7 @@ router.put("/:id",async(req,res)=>{
 })  
 
 //! Delete a user by id
-router.delete("/:id",async(req,res)=>{
+router.delete("/:id",authAccessToken,async(req,res)=>{
     try {
         const id = req.params.id;
         const user = await User.findByIdAndDelete(id);
