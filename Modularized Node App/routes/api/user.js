@@ -11,16 +11,16 @@ router.post(
   [
     check("name", "Name cannot be empty").notEmpty(),
     check("email", "Enter a valid email address").isEmail().notEmpty(),
-    check("email", "Enter a valid email address").notEmpty(),
-    check("password", "Password should be 8-12 character").notEmpty().isLength({min:8,max:12}),
+    check("password", "Password should be 8-12 character")
+      .notEmpty()
+      .isLength({ min: 8, max: 12 }),
   ],
   async (req, res) => {
     try {
-        
       const errors = validationResult(req);
-      let errorsList = errors.array().map((error)=>error.msg)
+      let errorsList = errors.array().map((error) => error.msg);
       if (!errors.isEmpty()) {
-        return res.status(400).json({errors:errorsList});
+        return res.status(400).json({ errors: errorsList });
       }
       const hashPassword = await bcrypt.hash(req.body.password, 10);
       const password = hashPassword;
@@ -39,23 +39,36 @@ router.post(
     }
   }
 );
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password, type, refreshToken } = req.body;
-    if (!type) {
-      res.status(401).json({ message: "Type is undefined" });
-    } else {
+router.post(
+  "/login",
+  [
+    check("type", "Type cannot be empty").notEmpty(),
+    check("type", "Type must be email or refresh").isIn(["email","refresh"]),
+    check("email", "Enter a valid email address").isEmail().notEmpty(),
+    check("password", "Password should be 8-12 character")
+      .notEmpty()
+      .isLength({ min: 8, max: 12 }),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      let errorsList = errors.array().map((error) => error.msg);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errorsList });
+      }
+      const { email, password, type, refreshToken } = req.body;
+
       if (type == "email") {
         await emailLogin(email, res, password);
       } else {
         refreshLogin(refreshToken, res, password);
       }
+    } catch (error) {
+      res.status(500).json({ message: "Something went wrong !!!" });
+      console.error(error.message);
     }
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong !!!" });
-    console.error(error.message);
   }
-});
+);
 
 router.get("/profile", authAccessToken, async (req, res) => {
   try {
