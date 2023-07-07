@@ -1,69 +1,106 @@
 const express = require("express")
 const bodyParser = require("body-parser")
 const dotenv = require("dotenv").config()
+const mongoose = require("mongoose")
 const app = express()
 app.use(bodyParser.json())
 
+const uri= process.env.DB_URI
+mongoose.connect(uri,{useNewUrlParser:true})
+.then(()=>console.log("DB is connected"))
+.catch((error)=>console.error("DB is not connected"))
+
+const userSchema = new mongoose.Schema({
+    name:String,
+    age:Number,
+    email:String,
+    password:String
+},{
+    timestamps:true
+})
+
+const User = mongoose.model("User",userSchema)
 
 //! Connection check
 app.get("/",(req,res)=>{
     res.json({message:"Welcome !!!"})
 })
 
-let users=[]
-let userId = 0
+
 //! Api to create a user
-app.post("/users",(req,res)=>{
-    const user = req.body
-    user.id = ++userId
-    users.push(user)
-    res.status(201).json(user)
+app.post("/users",async(req,res)=>{
+    try {
+        const userObject={
+            name:req.body.name,
+            age:req.body.age,
+            email:req.body.email,
+            password:req.body.password
+        }
+        const user = User(userObject) 
+        await user.save()
+        res.status(201).json(user)
+    } catch (error) {
+        res.status(400).json({message:"Something went wrong with the server"})
+        console.error(error)
+    }
+    
 })
 
 //! Api to get all users
-app.get("/users",(req,res)=>{
-    res.json(users)
+app.get("/users",async(req,res)=>{
+    const users = await User.find({})
+    res.json({all_users:users})
 })
 
 //! Api to get a user by id
-app.get("/users/:id",(req,res)=>{
-    const id = req.params.id
-    const user = users.find((u)=>u.id==id)
-    if(!user){
-        res.status(404).json({message:"User not found !!!"})
-    }else{
-        res.json(user)
+app.get("/users/:id",async(req,res)=>{
+    try {
+        const id = req.params.id
+        const user =await User.findById(id)
+        if(!user){
+            res.status(404).json({message:"User not found !!!"})
+        }else{
+            res.json(user)
+        }
+    } catch (error) {
+        res.status(400).json({message:"Something went wrong with the server"})
+        console.error(error)
     }
+    
 })
 
 //! Api to update a user
-app.put("/users/:id",(req,res)=>{
-    const id =req.params.id
-    const body =req.body
-    const user = users.find((u)=>u.id==id)
-    if(!user){
-        res.status(404).json({message:"User not found !!!"})
-    }else{
-        user.name = body.name
-        user.age = body.age
-        user.email = body.email
-        user.password = body.password
-
-        res.json(user)
+app.put("/users/:id",async(req,res)=>{
+    try {
+        const id = req.params.id
+        const user =await User.findByIdAndUpdate(id,req.body,{new:true})
+        if(!user){
+            res.status(404).json({message:"User not found !!!"})
+        }else{
+            res.json(user)
+        }
+    } catch (error) {
+        res.status(400).json({message:"Something went wrong with the server"})
+        console.error(error)
     }
-  
+    
 }) 
 
 //! Api to delete a user by id
-app.delete("/users/:id",(req,res)=>{
-    const id = req.params.id
-    const userIndex = users.findIndex((u)=>u.id==id)
-    if(userIndex){
-        users.splice(userIndex,1)
-        res.json(users)
-    }else{
-        res.status(404).json({message:"User not found !!!"})      
+app.delete("/users/:id",async(req,res)=>{
+    try {
+        const id = req.params.id
+        const user = await User.findByIdAndDelete(id)
+        if(!user){
+            res.status(404).json({message:"User not found !!!"})
+        }else{
+            res.json(user)
+        }
+    } catch (error) {
+        res.status(400).json({message:"Something went wrong with the server"})
+        console.error(error)
     }
+    
 })
 
 const port = process.env.PORT
