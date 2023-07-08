@@ -58,46 +58,9 @@ app.post("/users/login",async(req,res)=>{
             res.status(401).json({message:"Type is not defined"})
         }else{
             if(type=="email"){
-                const user =await User.findOne({email:email})
-        if(!user){
-            res.status(404).json({message:"User not found !!!"})
-        }else{
-            const validPassword= await bcrypt.compare(password,user.password)
-            if(!validPassword){
-                res.status(401).json({message:"User unauthorized"})
+                await email_login(email, res, password)
             }else{
-                const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET,{expiresIn:"2d"})
-                const refreshToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET,{expiresIn:"60d"})
-                userObject=user.toJSON()
-                userObject.accessToken= accessToken
-                userObject.refreshToken= refreshToken
-                res.json(userObject)
-            }
-        }
-            }else{
-                if(!refreshToken){
-                    res.status(401).json({message:"RefreshToken is not defined"})
-                }else{
-                    jwt.verify(refreshToken,process.env.JWT_SECRET,async(err,payload)=>{
-                        if(err){
-                            res.status(401).json({message:"User unauthorized"})
-                        }else{
-                            const id = payload.id
-                            const user = await User.findById(id)
-                            if(!user){
-                                res.status(404).json({message:"User not found !!!"})
-                            }else{
-                                const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET,{expiresIn:"2d"})
-                                const refreshToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET,{expiresIn:"60d"})
-                                userObject=user.toJSON()
-                                userObject.accessToken= accessToken
-                                userObject.refreshToken= refreshToken
-                                res.json(userObject)
-                            }
-                           
-                        }
-                    })
-                }
+                refreshToken_login(refreshToken, res)
             }
             
         }
@@ -205,3 +168,47 @@ const port = process.env.PORT
 app.listen(port,()=>{
     console.log(`App is running on port ${port}`)
 }) 
+
+async function email_login(email, res, password) {
+    const user = await User.findOne({ email: email })
+    if (!user) {
+        res.status(404).json({ message: "User not found !!!" })
+    } else {
+        const validPassword = await bcrypt.compare(password, user.password)
+        if (!validPassword) {
+            res.status(401).json({ message: "User unauthorized" })
+        } else {
+            tokenGenerator(user, res)
+        }
+    }
+}
+
+function refreshToken_login(refreshToken, res) {
+    if (!refreshToken) {
+        res.status(401).json({ message: "RefreshToken is not defined" })
+    } else {
+        jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, payload) => {
+            if (err) {
+                res.status(401).json({ message: "User unauthorized" })
+            } else {
+                const id = payload.id
+                const user = await User.findById(id)
+                if (!user) {
+                    res.status(404).json({ message: "User not found !!!" })
+                } else {
+                    tokenGenerator(user, res)
+                }
+
+            }
+        })
+    }
+}
+
+function tokenGenerator(user, res) {
+    const accessToken = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_SECRET, { expiresIn: "2d" })
+    const refreshToken = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_SECRET, { expiresIn: "60d" })
+    userObject = user.toJSON()
+    userObject.accessToken = accessToken
+    userObject.refreshToken = refreshToken
+    res.json(userObject)
+}
