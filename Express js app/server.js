@@ -1,27 +1,16 @@
 const express = require("express")
 const bodyParser = require("body-parser")
 const dotenv = require("dotenv").config()
-const mongoose = require("mongoose")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const connectDB = require("./config/DB")
+const User= require("./models/schema")
 const app = express()
 app.use(bodyParser.json())
 
-const uri= process.env.DB_URI
-mongoose.connect(uri,{useNewUrlParser:true})
-.then(()=>console.log("DB is connected"))
-.catch((error)=>console.error("DB is not connected"))
+connectDB()
 
-const userSchema = new mongoose.Schema({
-    name:String,
-    age:Number,
-    email:String,
-    password:String
-},{
-    timestamps:true
-})
-
-const User = mongoose.model("User",userSchema)
+ 
 
 //! Connection check
 app.get("/",(req,res)=>{
