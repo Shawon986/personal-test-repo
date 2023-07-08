@@ -63,8 +63,10 @@ app.post("/users/login",async(req,res)=>{
                 res.status(401).json({message:"User unauthorized"})
             }else{
                 const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
+                const refreshToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
                 userObject=user.toJSON()
                 userObject.accessToken= accessToken
+                userObject.refreshToken= refreshToken
                 res.json(userObject)
             }
         }
@@ -74,6 +76,26 @@ app.post("/users/login",async(req,res)=>{
     }
 
 })
+
+//! Middleware
+const authenticateToken = (req,res,next)=>{
+    const authHeader = req.headers.authorization
+    const token = authHeader && authHeader.split(" ")[1]
+    if(!token){
+        res.status(401).json({message:"User unauthorized"})
+        return
+    }else{
+        jwt.verify(token,process.env.JWT_SECRET,(err,user)=>{
+            if(err){
+                res.status(401).json({message:"User unauthorized"})
+            }else{
+                req.user = user
+                next()
+            }
+        })
+
+    }
+}
 
 //! Api to get all users
 app.get("/users",async(req,res)=>{
