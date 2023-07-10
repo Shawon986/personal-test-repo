@@ -12,28 +12,28 @@ router.post("/",
     check("password", "Password should be 8-12 character").notEmpty().isLength({min:8,max:12}),
 ],
 async(req,res)=>{
-    try {
-        const errors = validationResult(req);
-        let errorsList = errors.array().map((error)=>error.msg)
-        if (!errors.isEmpty()) {
-          return res.status(400).json({errors:errorsList});
+    try {                                            
+        const errors = validationResult(req); 
+        let errorsList = errors.array().map((error)=>error.msg) 
+        if (!errors.isEmpty()) {   
+          return res.status(400).json({errors:errorsList});   
+        } 
+        const salt = await bcrypt.genSalt(10)    
+        const hashedPassword = await bcrypt.hash(req.body.password,salt)    
+        const userObject={          
+            name:req.body.name,                         
+            age:req.body.age,                   
+            email:req.body.email,                       
+            password:hashedPassword               
         }
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(req.body.password,salt) 
-        const userObject={
-            name:req.body.name,
-            age:req.body.age,
-            email:req.body.email,
-            password:hashedPassword
-        }
-        const user = User(userObject) 
+        const user = User(userObject)  
         await user.save()
-        res.status(201).json(user)
+        res.status(201).json(user)  
     } catch (error) {
         res.status(400).json({message:"Something went wrong with the server"})
         console.error(error)
     }
-    
+     
 });
 
 //! Api to login a user(email/password)
@@ -44,9 +44,9 @@ router.post("/login",
     check("email", "Enter a valid email address").isEmail().notEmpty(),
     check("password", "Password should be 8-12 character")
       .notEmpty()
-      .isLength({ min: 8, max: 12 }),
+      .isLength({ min: 8, max: 12 }), 
   ],
-async(req,res)=>{
+async(req,res)=>{ 
     try {
         const errors = validationResult(req);
         let errorsList = errors.array().map((error)=>error.msg)
