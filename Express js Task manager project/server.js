@@ -105,7 +105,21 @@ const authToken= (req,res,next)=>{
     }
 }
 
-//!
+//! get user profile
+app.get("/users/profile",authToken,async(req,res)=>{
+    try {
+        const id = req.payload.id
+        const user = await User.findById(id)
+        if(!user){
+            res.status(404).json({message:"user not found"})
+        }else{
+            res.json(user)
+        }
+    } catch (error) {
+        res.status(500).json({message:"Something went wrong"})
+        console.error(error)
+    }
+})
 
 
 //! get all user
