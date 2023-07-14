@@ -24,6 +24,8 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
   },
+},{
+    timestamps:true
 });
 
 const User = mongoose.model("User", userSchema);
@@ -70,11 +72,11 @@ app.post("/users/login", async (req, res) => {
           } else {
             const accessToken = jwt.sign(
               { email: user.email, id: user._id },
-              process.env.JWT_SECRET
+              process.env.JWT_SECRET,{expiresIn:"2d"}
             );
             const refreshToken = jwt.sign(
               { email: user.email, id: user._id },
-              process.env.JWT_SECRET
+              process.env.JWT_SECRET,{expiresIn:"60d"}
             );
             userObject = user.toJSON();
             userObject.accessToken = accessToken;
@@ -100,11 +102,11 @@ app.post("/users/login", async (req, res) => {
                 } else {
                   const accessToken = jwt.sign(
                     { email: user.email, id: user._id },
-                    process.env.JWT_SECRET
+                    process.env.JWT_SECRET,{expiresIn:"2d"}
                   );
                   const refreshToken = jwt.sign(
                     { email: user.email, id: user._id },
-                    process.env.JWT_SECRET
+                    process.env.JWT_SECRET,{expiresIn:"60d"}
                   );
                   userObject = user.toJSON();
                   userObject.accessToken = accessToken;
