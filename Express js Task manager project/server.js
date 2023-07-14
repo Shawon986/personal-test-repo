@@ -3,6 +3,7 @@ const bodyParser = require("body-parser")
 const dotenv = require("dotenv").config()
 const mongoose = require("mongoose")
 const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
 const { reset } = require("nodemon")
 const app = express()
 app.use(bodyParser.json())
@@ -50,6 +51,43 @@ app.post("/users",async(req,res)=>{
         console.error(error)
     }
 })
+
+//! login a user by email and password
+app.post("/users/login",async(req,res)=>{
+    try {
+        const {email,password,type,refreshToken}=req.body
+        if(!type){
+            res.json({message:"type is not defined"})
+        }else{
+            if(type=="email"){
+            const user = await User.findOne({email:email})
+            if(!user){
+                res.status(404).json({message:"user not found"})
+                }else{
+                    const validPassword = bcrypt.compare(password,user.password)
+                    if(!validPassword){
+                        res.status(400).json({message:"user unauthorized"})
+                    }else{
+                        const accessToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
+                        const refreshToken = jwt.sign({email:user.email,id:user._id},process.env.JWT_SECRET)
+                        userObject=user.toJSON()
+                        userObject.accessToken=accessToken
+                        userObject.refreshToken=refreshToken
+                        res.json(userObject)
+                    } 
+                }
+            }
+
+            
+        }
+    } catch (error) {
+        res.status(500).json({message:"Something went wrong"})
+        console.error(error)
+    }
+})
+
+//! middleware
+
 
 //! get all user
 app.get("/users",async(req,res)=>{
