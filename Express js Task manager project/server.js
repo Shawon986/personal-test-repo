@@ -70,53 +70,11 @@ app.post("/users/login", async (req, res) => {
           if (!validPassword) {
             res.status(400).json({ message: "user unauthorized" });
           } else {
-            const accessToken = jwt.sign(
-              { email: user.email, id: user._id },
-              process.env.JWT_SECRET,{expiresIn:"2d"}
-            );
-            const refreshToken = jwt.sign(
-              { email: user.email, id: user._id },
-              process.env.JWT_SECRET,{expiresIn:"60d"}
-            );
-            userObject = user.toJSON();
-            userObject.accessToken = accessToken;
-            userObject.refreshToken = refreshToken;
-            res.json(userObject);
+            tokenGenerate(user, res);
           }
         }
       } else {
-        if (!refreshToken) {
-          res.status(400).json({ message: "user unauthorized" });
-        } else {
-          jwt.verify(
-            refreshToken,
-            process.env.JWT_SECRET,
-            async (err, payloads) => {
-              if (err) {
-                res.status(400).json({ message: "unauthorized" });
-              } else {
-                const id = payloads.id;
-                const user = await User.findById(id);
-                if (!user) {
-                  res.status(404).json({ message: "user not found" });
-                } else {
-                  const accessToken = jwt.sign(
-                    { email: user.email, id: user._id },
-                    process.env.JWT_SECRET,{expiresIn:"2d"}
-                  );
-                  const refreshToken = jwt.sign(
-                    { email: user.email, id: user._id },
-                    process.env.JWT_SECRET,{expiresIn:"60d"}
-                  );
-                  userObject = user.toJSON();
-                  userObject.accessToken = accessToken;
-                  userObject.refreshToken = refreshToken;
-                  res.json(userObject);
-                }
-              }
-            }
-          );
-        }
+        refreshLogin(refreshToken, res);
       }
     }
   } catch (error) {
@@ -226,3 +184,42 @@ const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`app is running on port ${port}`);
 });
+function refreshLogin(refreshToken, res) {
+  if (!refreshToken) {
+    res.status(400).json({ message: "user unauthorized" });
+  } else {
+    jwt.verify(
+      refreshToken,
+      process.env.JWT_SECRET,
+      async (err, payloads) => {
+        if (err) {
+          res.status(400).json({ message: "unauthorized" });
+        } else {
+          const id = payloads.id;
+          const user = await User.findById(id);
+          if (!user) {
+            res.status(404).json({ message: "user not found" });
+          } else {
+            tokenGenerate(user, res);
+          }
+        }
+      }
+    );
+  }
+}
+
+function tokenGenerate(user, res) {
+  const accessToken = jwt.sign(
+    { email: user.email, id: user._id },
+    process.env.JWT_SECRET, { expiresIn: "2d" }
+  );
+  const refreshToken = jwt.sign(
+    { email: user.email, id: user._id },
+    process.env.JWT_SECRET, { expiresIn: "60d" }
+  );
+  userObject = user.toJSON();
+  userObject.accessToken = accessToken;
+  userObject.refreshToken = refreshToken;
+  res.json(userObject);
+}
+
