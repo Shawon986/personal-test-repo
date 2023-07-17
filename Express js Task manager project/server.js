@@ -4,15 +4,12 @@ const dotenv = require("dotenv").config();
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { reset } = require("nodemon");
+const connectDb = require("./config/db");
 const app = express();
 app.use(bodyParser.json());
 
-const uri = process.env.DB_URI;
-mongoose
-  .connect(uri, { useNewUrlParser: true })
-  .then(() => console.log("DB is Connected"))
-  .catch((error) => console.error("DB is not connected"));
+
+connectDb()
 
 const userSchema = new mongoose.Schema({
   name: {
