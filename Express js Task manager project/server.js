@@ -62,17 +62,7 @@ app.post("/users/login", async (req, res) => {
       res.json({ message: "type is not defined" });
     } else {
       if (type == "email") {
-        const user = await User.findOne({ email: email });
-        if (!user) {
-          res.status(404).json({ message: "user not found" });
-        } else {
-          const validPassword = bcrypt.compare(password, user.password);
-          if (!validPassword) {
-            res.status(400).json({ message: "user unauthorized" });
-          } else {
-            tokenGenerate(user, res);
-          }
-        }
+        await emailLogin(email, res, password);
       } else {
         refreshLogin(refreshToken, res);
       }
@@ -184,6 +174,20 @@ const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`app is running on port ${port}`);
 });
+async function emailLogin(email, res, password) {
+  const user = await User.findOne({ email: email });
+  if (!user) {
+    res.status(404).json({ message: "user not found" });
+  } else {
+    const validPassword = bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      res.status(400).json({ message: "user unauthorized" });
+    } else {
+      tokenGenerate(user, res);
+    }
+  }
+}
+
 function refreshLogin(refreshToken, res) {
   if (!refreshToken) {
     res.status(400).json({ message: "user unauthorized" });
