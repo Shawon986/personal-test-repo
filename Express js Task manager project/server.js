@@ -6,208 +6,25 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const connectDb = require("./config/db");
 const User = require("./models/user")
+const authToken= require("./middleware/auth")
 const app = express();
 app.use(bodyParser.json());
 
-
 connectDb()
-
-
 
 //! check connection
 app.get("/", (req, res) => {
   res.status(400).json({ message: "Welcome to Task Manager" });
 });
 
-//! create a user
-app.post("/users", async (req, res) => {
-  try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+//! Routes
+app.use("/api/users",require("./routes/api/users"))
 
-    userObject = {
-      name: req.body.name,
-      email: req.body.email,
-      password: hashedPassword,
-    };
-    const user = new User(userObject);
-    await user.save();
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
-    console.error(error);
-  }
-});
 
-//! login a user by email and password
-app.post("/users/login", async (req, res) => {
-  try {
-    const { email, password, type, refreshToken } = req.body;
-    if (!type) {
-      res.json({ message: "type is not defined" });
-    } else {
-      if (type == "email") {
-        await emailLogin(email, res, password);
-      } else {
-        refreshLogin(refreshToken, res);
-      }
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
-    console.error(error);
-  }
-});
-
-//! middleware
-const authToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(" ")[1];
-  if (!token) {
-    res.status(400).json({ message: "unauthorized" });
-    return;
-  } else {
-    jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
-      if (err) {
-        res.status(400).json({ message: "unauthorized" });
-      } else {
-        req.payload = payload;
-        next();
-      }
-    });
-  }
-};
-
-//! get user profile
-app.get("/users/profile", authToken, async (req, res) => {
-  try {
-    const id = req.payload.id;
-    const user = await User.findById(id);
-    if (!user) {
-      res.status(404).json({ message: "user not found" });
-    } else {
-      res.json(user);
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
-    console.error(error);
-  }
-});
-
-//! get all user
-app.get("/users", async (req, res) => {
-  try {
-    const user = await User.find({});
-    res.json(user);
-  } catch (error) {
-    res.json({ message: "Something went wrong" });
-    console.error(error);
-  }
-});
-
-//! get a user by id
-app.get("/users/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const user = await User.findById(id);
-    if (!user) {
-      res.status(404).json({ message: "user not found" });
-    } else {
-      res.json(user);
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
-    console.error(error);
-  }
-});
-
-//! update a user
-app.put("/users/:id", async (req, res) => {
-  try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    const id = req.params.id;
-    const user = await User.findByIdAndUpdate(id, req.body, { new: true });
-    if (!user) {
-      res.status(404).json({ message: "user not found" });
-    } else {
-      user.password = hashedPassword;
-      res.json(user);
-      await user.save();
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
-    console.error(error);
-  }
-});
-
-//! delete a user by id
-app.delete("/users/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const user = await User.findByIdAndDelete(id);
-    if (!user) {
-      res.status(404).json({ message: "user not found" });
-    } else {
-      res.json(user);
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
-    console.error(error);
-  }
-});
 
 const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`app is running on port ${port}`);
 });
-async function emailLogin(email, res, password) {
-  const user = await User.findOne({ email: email });
-  if (!user) {
-    res.status(404).json({ message: "user not found" });
-  } else {
-    const validPassword = bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      res.status(400).json({ message: "user unauthorized" });
-    } else {
-      tokenGenerate(user, res);
-    }
-  }
-}
 
-function refreshLogin(refreshToken, res) {
-  if (!refreshToken) {
-    res.status(400).json({ message: "user unauthorized" });
-  } else {
-    jwt.verify(
-      refreshToken,
-      process.env.JWT_SECRET,
-      async (err, payloads) => {
-        if (err) {
-          res.status(400).json({ message: "unauthorized" });
-        } else {
-          const id = payloads.id;
-          const user = await User.findById(id);
-          if (!user) {
-            res.status(404).json({ message: "user not found" });
-          } else {
-            tokenGenerate(user, res);
-          }
-        }
-      }
-    );
-  }
-}
-
-function tokenGenerate(user, res) {
-  const accessToken = jwt.sign(
-    { email: user.email, id: user._id },
-    process.env.JWT_SECRET, { expiresIn: "2d" }
-  );
-  const refreshToken = jwt.sign(
-    { email: user.email, id: user._id },
-    process.env.JWT_SECRET, { expiresIn: "60d" }
-  );
-  userObject = user.toJSON();
-  userObject.accessToken = accessToken;
-  userObject.refreshToken = refreshToken;
-  res.json(userObject);
-}
 
