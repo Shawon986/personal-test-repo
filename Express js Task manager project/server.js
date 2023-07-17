@@ -5,27 +5,14 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const connectDb = require("./config/db");
+const User = require("./models/user")
 const app = express();
 app.use(bodyParser.json());
 
 
 connectDb()
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-  },
-  email: {
-    type: String,
-  },
-  password: {
-    type: String,
-  },
-},{
-    timestamps:true
-});
 
-const User = mongoose.model("User", userSchema);
 
 //! check connection
 app.get("/", (req, res) => {
