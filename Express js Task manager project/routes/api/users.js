@@ -39,23 +39,36 @@ router.post(
 );
 
 //! login a user by email and password
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password, type, refreshToken } = req.body;
-    if (!type) {
-      res.json({ message: "type is not defined" });
-    } else {
+router.post(
+  "/login",
+  [
+    check("type", "Type cannot be empty").notEmpty(),
+    check("type", "Type must be email or refresh").isIn(["email", "refresh"]),
+    check("email", "Enter a valid email address").isEmail().notEmpty(),
+    check("password", "Password should be 8-12 character")
+      .notEmpty()
+      .isLength({ min: 8, max: 12 }),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      let errorsList = errors.array().map((error) => error.msg);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errorsList });
+      }
+      const { email, password, type, refreshToken } = req.body;
+
       if (type == "email") {
         await emailLogin(email, res, password);
       } else {
         refreshLogin(refreshToken, res);
       }
+    } catch (error) {
+      res.status(500).json({ message: "Something went wrong" });
+      console.error(error);
     }
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
-    console.error(error);
   }
-});
+);
 
 //! get user profile
 router.get("/profile", authToken, async (req, res) => {
