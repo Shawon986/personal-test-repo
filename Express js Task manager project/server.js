@@ -21,7 +21,6 @@ app.get("/", (req, res) => {
 app.use("/api/users",require("./routes/api/users"))
 
 
-
 const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`app is running on port ${port}`);

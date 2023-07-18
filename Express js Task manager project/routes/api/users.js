@@ -41,7 +41,7 @@ router.post("/",async (req, res) => {
     }
   });
 
-//! get user profile
+//! get user profile 
 router.get("/profile",authToken, async (req, res) => {
     try {
       const id = req.payload.id;
@@ -69,7 +69,7 @@ router.get("/", async (req, res) => {
   }); 
 
 //! get a user by id
-router.get("/:id", async (req, res) => {
+router.get("/:id",authToken, async (req, res) => {
     try {
       const id = req.params.id;
       const user = await User.findById(id);
@@ -85,7 +85,7 @@ router.get("/:id", async (req, res) => {
   });
   
   //! update a user
-  router.put("/:id", async (req, res) => {
+  router.put("/:id", authToken,async (req, res) => {
     try {
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
       const id = req.params.id;
@@ -104,7 +104,7 @@ router.get("/:id", async (req, res) => {
   });
   
   //! delete a user by id
-  router.delete("/:id", async (req, res) => {
+  router.delete("/:id",authToken, async (req, res) => {
     try {
       const id = req.params.id;
       const user = await User.findByIdAndDelete(id);
