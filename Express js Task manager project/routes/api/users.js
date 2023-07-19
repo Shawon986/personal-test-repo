@@ -10,7 +10,7 @@ router.post(
   [
     check("name", "Name cannot be empty").notEmpty(),
     check("email", "Enter a valid email address").isEmail().notEmpty(),
-    check("password", "Password should be 8-12 character")
+    check("password", "Password should be 6-18 character")
       .notEmpty()
       .isLength({ min: 8, max: 12 }),
   ],
@@ -47,7 +47,7 @@ router.post(
     check("email", "Enter a valid email address").isEmail().notEmpty(),
     check("password", "Password should be 8-12 character")
       .notEmpty()
-      .isLength({ min: 8, max: 12 }),
+      .isLength({ min: 6, max: 18 }),
   ],
   async (req, res) => {
     try {
