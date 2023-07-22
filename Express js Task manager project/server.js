@@ -19,9 +19,10 @@ app.get("/", (req, res) => {
 
 //! Routes
 app.use("/api/users",require("./routes/api/users"))
+app.use("/api/tasks",require("./routes/api/tasks"))
 
 //!POrt connection
-const port = process.env.PORT;
+const port = process.env.PORT; 
 app.listen(port, () => {
   console.log(`app is running on port ${port}`);
 });
