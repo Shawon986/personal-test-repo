@@ -46,6 +46,23 @@ router.get("/",authToken, async (req, res) => {
   }
 });
 
+//! update a task by id 
+router.put("/:id", authToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const task = await Task.findByIdAndUpdate(id, req.body, { new: true });
+    if (!task) {
+      res.status(404).json({ message: "user not found" });
+    } else {
+      res.json(task);
+      await task.save();
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+    console.error(error);
+  }
+});
+
 
 //! login a user by email and password
 router.post(
@@ -112,24 +129,7 @@ router.get("/:id", authToken, async (req, res) => {
   }
 });
 
-//! update a user
-router.put("/:id", authToken, async (req, res) => {
-  try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    const id = req.params.id;
-    const user = await User.findByIdAndUpdate(id, req.body, { new: true });
-    if (!user) {
-      res.status(404).json({ message: "user not found" });
-    } else {
-      user.password = hashedPassword;
-      res.json(user);
-      await user.save();
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
-    console.error(error);
-  }
-});
+
 
 //! delete a user by id
 router.delete("/:id", authToken, async (req, res) => {
