@@ -34,6 +34,19 @@ router.post(
   }
 );
 
+//! get all created task
+router.get("/",authToken, async (req, res) => {
+  try {
+    const id = req.payload.id
+    const task = await Task.find({userId:id});
+    res.json(task);
+  } catch (error) {
+    res.json({ message: "Something went wrong" });
+    console.error(error);
+  }
+});
+
+
 //! login a user by email and password
 router.post(
   "/login",
@@ -82,16 +95,6 @@ router.get("/profile", authToken, async (req, res) => {
   }
 });
 
-//! get all user
-router.get("/", async (req, res) => {
-  try {
-    const user = await User.find({});
-    res.json(user);
-  } catch (error) {
-    res.json({ message: "Something went wrong" });
-    console.error(error);
-  }
-});
 
 //! get a user by id
 router.get("/:id", authToken, async (req, res) => {
