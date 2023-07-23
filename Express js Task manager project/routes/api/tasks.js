@@ -22,7 +22,7 @@ router.post(
         title: req.body.title,
         description: req.body.description,
         userId : id,
-        status : "to-do"
+        
       };
       const task = new Task(taskObject);
       await task.save();
