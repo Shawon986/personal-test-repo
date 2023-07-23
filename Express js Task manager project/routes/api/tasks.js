@@ -100,6 +100,24 @@ router.put("/:id", authToken, async (req, res) => {
   }
 });
 
+//! get a task by id
+router.get("/:id", authToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userId= req.payload.id
+
+    const task = await Task.findOne({_id:id,userId:userId});
+    if (!task) {
+      res.status(404).json({ message: "Task not found" });
+    } else {
+      res.json(task);
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+    console.error(error);
+  }
+});
+
 //! login a user by email and password
 router.post(
   "/login",
@@ -148,21 +166,7 @@ router.get("/profile", authToken, async (req, res) => {
   }
 });
 
-//! get a user by id
-router.get("/:id", authToken, async (req, res) => {
-  try {
-    const id = req.params.id;
-    const user = await User.findById(id);
-    if (!user) {
-      res.status(404).json({ message: "user not found" });
-    } else {
-      res.json(user);
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
-    console.error(error);
-  }
-});
+
 
 //! delete a user by id
 router.delete("/:id", authToken, async (req, res) => {
