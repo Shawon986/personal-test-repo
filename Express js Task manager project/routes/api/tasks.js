@@ -118,65 +118,17 @@ router.get("/:id", authToken, async (req, res) => {
   }
 });
 
-//! login a user by email and password
-router.post(
-  "/login",
-  [
-    check("type", "Type cannot be empty").notEmpty(),
-    check("type", "Type must be email or refresh").isIn(["email", "refresh"]),
-    check("email", "Enter a valid email address").isEmail().notEmpty(),
-    check("password", "Password should be 8-12 character")
-      .notEmpty()
-      .isLength({ min: 6, max: 18 }),
-  ],
-  async (req, res) => {
-    try {
-      const errors = validationResult(req);
-      let errorsList = errors.array().map((error) => error.msg);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errorsList });
-      }
-      const { email, password, type, refreshToken } = req.body;
 
-      if (type == "email") {
-        await emailLogin(email, res, password);
-      } else {
-        refreshLogin(refreshToken, res);
-      }
-    } catch (error) {
-      res.status(500).json({ message: "Something went wrong" });
-      console.error(error);
-    }
-  }
-);
-
-//! get user profile
-router.get("/profile", authToken, async (req, res) => {
-  try {
-    const id = req.payload.id;
-    const user = await User.findById(id);
-    if (!user) {
-      res.status(404).json({ message: "user not found" });
-    } else {
-      res.json(user);
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
-    console.error(error);
-  }
-});
-
-
-
-//! delete a user by id
+//! delete a task by id
 router.delete("/:id", authToken, async (req, res) => {
   try {
     const id = req.params.id;
-    const user = await User.findByIdAndDelete(id);
-    if (!user) {
-      res.status(404).json({ message: "user not found" });
+    const userId= req.payload.id
+    const task = await Task.findOneAndDelete({_id:id,userId:userId});
+    if (!task) {
+      res.status(404).json({ message: "task not found" });
     } else {
-      res.json(user);
+      res.json(task);
     }
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
@@ -186,53 +138,3 @@ router.delete("/:id", authToken, async (req, res) => {
 
 module.exports = router;
 
-async function emailLogin(email, res, password) {
-  const user = await User.findOne({ email: email });
-  if (!user) {
-    res.status(404).json({ message: "user not found" });
-  } else {
-    const validPassword = bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      res.status(400).json({ message: "user unauthorized" });
-    } else {
-      tokenGenerate(user, res);
-    }
-  }
-}
-
-function refreshLogin(refreshToken, res) {
-  if (!refreshToken) {
-    res.status(400).json({ message: "user unauthorized" });
-  } else {
-    jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, payloads) => {
-      if (err) {
-        res.status(400).json({ message: "unauthorized" });
-      } else {
-        const id = payloads.id;
-        const user = await User.findById(id);
-        if (!user) {
-          res.status(404).json({ message: "user not found" });
-        } else {
-          tokenGenerate(user, res);
-        }
-      }
-    });
-  }
-}
-
-function tokenGenerate(user, res) {
-  const accessToken = jwt.sign(
-    { email: user.email, id: user._id },
-    process.env.JWT_SECRET,
-    { expiresIn: "2d" }
-  );
-  const refreshToken = jwt.sign(
-    { email: user.email, id: user._id },
-    process.env.JWT_SECRET,
-    { expiresIn: "60d" }
-  );
-  userObject = user.toJSON();
-  userObject.accessToken = accessToken;
-  userObject.refreshToken = refreshToken;
-  res.json(userObject);
-}
