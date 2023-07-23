@@ -50,9 +50,10 @@ router.get("/",authToken, async (req, res) => {
 router.put("/:id", authToken, async (req, res) => {
   try {
     const id = req.params.id;
-    const task = await Task.findByIdAndUpdate(id, req.body, { new: true });
+    const userId = req.payload.id
+    const task = await Task.findByIdAndUpdate({_id:id,userId:userId}, req.body, { new: true });
     if (!task) {
-      res.status(404).json({ message: "user not found" });
+      res.status(404).json({ message: "task not found" });  
     } else {
       res.json(task);
       await task.save();
