@@ -11,7 +11,7 @@ router.post(
   [
     check("name", "Name cannot be empty").notEmpty(),
     check("email", "Enter a valid email address").isEmail().notEmpty(),
-    check("password", "Password should be 6-18 character")
+    check("password", "Password should be 8-12 character")
       .notEmpty()
       .isLength({ min: 8, max: 12 }),
   ], 
