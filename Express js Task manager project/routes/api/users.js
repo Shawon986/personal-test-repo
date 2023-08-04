@@ -62,7 +62,7 @@ router.post(
       if (type == "email") {
         await emailLogin(email, res, password);
       } else {
-        refreshLogin(refreshToken, res);
+        refreshLogin(refreshToken, res,password); 
       }
     } catch (error) {
       res.status(500).json({ message: "Something went wrong" });
@@ -149,14 +149,14 @@ router.delete("/:id", authToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = router
 
 async function emailLogin(email, res, password) {
   const user = await User.findOne({ email: email });
   if (!user) {
     res.status(404).json({ message: "user not found" });
   } else {
-    const validPassword = bcrypt.compare(password, user.password);
+    const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       res.status(400).json({ message: "user unauthorized" });
     } else {
@@ -165,7 +165,7 @@ async function emailLogin(email, res, password) {
   }
 }
 
-function refreshLogin(refreshToken, res) {
+function refreshLogin(refreshToken, res,password) {
   if (!refreshToken) {
     res.status(400).json({ message: "user unauthorized" });
   } else {
@@ -178,7 +178,13 @@ function refreshLogin(refreshToken, res) {
         if (!user) {
           res.status(404).json({ message: "user not found" });
         } else {
-          tokenGenerate(user, res);
+          const validPassword = await bcrypt.compare(password,user.password)
+          if (!validPassword) {
+            res.status(401).json({ message: "User unauthorized" });
+          } else {
+            tokenGenerate(user, res)
+             
+          }
         }
       }
     });
